@@ -1,0 +1,43 @@
+.videoFeed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(1); /* Change to -1 if using front camera to mirror it */
+  z-index: visible;
+}
+
+.errorMessage {
+  color: #ff4d4d;
+  background: rgba(255, 77, 77, 0.1);
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: relative;
+  z-index: 1; /* Keep it above the background */
+}
+.overlay {
+  z-index: 10; /* Keep the purple corners on top of the video */
+}
+
+.cameraWrapper {
+   flex: 1;
+   min-height: 300px; /* Force it to take up space */
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
