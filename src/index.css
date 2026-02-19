@@ -1,0 +1,26 @@
+/* src/index.css */
+:root {
+  background-color: #0f0f0f; /* This forces the whole browser to stay dark */
+  color: white;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #0f0f0f;
+}
+
+#root {
+  width: 100%;
+  max-width: 450px; /* This makes it look like a mobile phone on your screen */
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #0f0f0f;
+}
+
+button {
+  cursor: pointer;
+}
