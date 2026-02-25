@@ -40,7 +40,7 @@ const Dashboard = ({ onSendClick, onReceiveClick }) => {
                 <ArrowDownLeft className="text-green-500" size={20} />
               </div>
               <div>
-                <p className={styles.userName}>John Adebayo</p>
+                <p className={styles.userName}>Kamaludeen Abdulkadir</p>
                 <p className={styles.timeText}>
                   <Clock size={10} /> 2 hours ago
                 </p>
