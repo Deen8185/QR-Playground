@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './ConfirmPayment.module.css';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Info } from 'lucide-react';
 
 const ConfirmPayment = ({ recipientData, onConfirm, onBack }) => {
-  // recipientData now comes from the API via onScanSuccess in ScanQRCode.jsx
-  // Expected fields: receiver, bank_name, account, bank_code
+  // 🔍 DEBUG LOG: This will show in your browser console exactly what arrived from App.jsx
+  useEffect(() => {
+    console.log("--- BRIDGE DEBUG START ---");
+    console.log("Full recipientData object:", recipientData);
+    if (recipientData) {
+      console.log("Receiver Key Value:", recipientData.receiver);
+      console.log("Bank Name Key Value:", recipientData.bank_name);
+    }
+    console.log("--- BRIDGE DEBUG END ---");
+  }, [recipientData]);
   
   const [amount, setAmount] = useState("");
 
@@ -13,7 +21,6 @@ const ConfirmPayment = ({ recipientData, onConfirm, onBack }) => {
       alert("Please enter a valid amount");
       return;
     }
-    // Pass the user-entered amount to the final payment logic
     onConfirm({ ...recipientData, amount: parseFloat(amount) });
   };
 
@@ -40,19 +47,26 @@ const ConfirmPayment = ({ recipientData, onConfirm, onBack }) => {
             fontWeight: 'bold',
             color: 'white' 
           }}>
-            {(recipientData.receiver || "U").substring(0,2).toUpperCase()}
+            {/* Added optional chaining ?. to prevent crashes */}
+            {(recipientData?.receiver || "U").substring(0,2).toUpperCase()}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <p style={{ fontWeight: 'bold', color: 'white' }}>{recipientData.receiver || "Unknown Recipient"}</p>
+              {/* Added optional chaining and prioritized receiver key */}
+              <p style={{ fontWeight: 'bold', color: 'white' }}>
+                {recipientData?.receiver || "Unknown Recipient"}
+              </p>
               <CheckCircle2 size={14} color="#22c55e" fill="#22c55e22" />
             </div>
-            {/* 👈 BANK NAME ADDED HERE UNDER THE RECEIVER */}
+            
+            {/* BANK NAME DISPLAY */}
             <p style={{ color: '#6366f1', fontSize: '12px', fontWeight: '600' }}>
-              {recipientData.bank_name || "Fetching Bank..." }
+              {recipientData?.bank_name || "Fetching Bank..." }
             </p>
+            
+            {/* ACCOUNT NUMBER DISPLAY */}
             <p style={{ color: '#aaa', fontSize: '12px' }}>
-              A/C: {recipientData.account || "••••••••••"}
+              A/C: {recipientData?.account || "XXXXXXXXXX"} 
             </p>
           </div>
         </div>
@@ -84,7 +98,7 @@ const ConfirmPayment = ({ recipientData, onConfirm, onBack }) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', color: '#94a3b8' }}>
           <Info size={14} />
-          <p style={{ fontSize: '12px' }}>This merchant is verified .</p>
+          <p style={{ fontSize: '12px' }}>This merchant is verified via Bridge Engine.</p>
         </div>
       </div>
 
@@ -96,7 +110,8 @@ const ConfirmPayment = ({ recipientData, onConfirm, onBack }) => {
           style={{
             opacity: !amount ? 0.6 : 1,
             backgroundColor: '#6366f1',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            cursor: !amount ? 'not-allowed' : 'pointer'
           }}
         >
           Pay

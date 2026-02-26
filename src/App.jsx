@@ -17,35 +17,35 @@ export default function App() {
     setCurrentPage('dashboard');
   };
 
-  const handleScanSuccess = async (qrData) => {
+const handleScanSuccess = async (qrData) => {
+  // Ensure we are sending the string URL, not the whole object
+  const payloadString = typeof qrData === 'string' ? qrData : (qrData.payload || "");
+
   try {
-    const url = `https://scan-to-pay-api.onrender.com/translate-scan?qr_payload=${encodeURIComponent(qrData)}`;
+    const url = `https://scan-to-pay-api.onrender.com/translate-scan?qr_payload=${encodeURIComponent(payloadString)}`;
+    
     const response = await fetch(url, {
       method: "GET",
       headers: { "X-API-KEY": "Khadijat-U-Kamaludeen-feb14aug170604-dee&deen" }
     });
 
-    const data = await response.json();
+    const apiData = await response.json();
+    console.log("FINAL API VALIDATION:", apiData);
 
-    if (response.ok && data.status === "success") {
+    if (response.ok && apiData.status === "success") {
       setScannedUser({
-        receiver: data.receiver, // 👈 Match API key 'receiver'
-        bank_name: data.bank_name,
-        account: data.account
+        receiver: apiData.receiver,
+        bank_name: apiData.bank_name,
+        account: apiData.account
       }); 
       setCurrentPage('confirm-payment');
     } else {
-      alert(data.message || "Invalid QR Code");
+      alert("Verification Failed: " + (apiData.message || "Invalid QR"));
     }
   } catch (error) {
-    alert("Bridge Engine is sleeping. Please wait 30 seconds.");
+    alert("Bridge Engine is sleeping. Please wait 30 seconds for Render to wake up.");
   }
 };
-  const handleFinalPayment = (paymentDetails) => {
-    // This receives the {receiver, amount, etc} from ConfirmPayment
-    setLastAmount(paymentDetails.amount);
-    setCurrentPage('success');
-  };
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-black text-white shadow-2xl flex flex-col">
