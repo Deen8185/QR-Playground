@@ -8,39 +8,47 @@ export default function ScanQRCode({ onBack, onScanSuccess }) {
   const canvasRef = useRef(null);
   const [error, setError] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
-  const scanningRef = useRef(true); // Use a ref to track scanning state across renders
+  const scanningRef = useRef(true); 
 
   const API_BASE = "https://scan-to-pay-api.onrender.com";
 
+  // ✅ THE API HANDLER (Encoding/Decoding handled by Python)
   const handleVerifiedScan = async (rawPayload) => {
     setIsVerifying(true);
-    scanningRef.current = false; // Stop the loop
+    scanningRef.current = false; // Pause camera loop
     
     try {
-      const response = await fetch(`${API_BASE}/translate-scan?qr_payload=${encodeURIComponent(rawPayload)}`, {
-        method: "GET",
-        headers: { "X-API-KEY": "Khadijat-U-Kamaludeen-feb14aug170604-dee&deen" }
+      // 🚀 FIXED: Changed from GET to POST to match your new FastAPI route
+      const response = await fetch(`${API_BASE}/translate-scan`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-API-KEY": "Khadijat-U-Kamaludeen-feb14aug170604-dee&deen" 
+        },
+        body: JSON.stringify({ qr_payload: rawPayload })
       });
 
       const result = await response.json();
 
       if (response.ok && result.status === "success") {
+        // API successfully decoded the NQR string into user details
         onScanSuccess(result); 
       } else {
-        setError(result.message || "Invalid or Unrecognized QR Code");
+        setError(result.message || "Invalid QR Code");
+        // Resume scanning after a short delay
         setTimeout(() => {
           setError(null);
           setIsVerifying(false);
-          scanningRef.current = true; // Restart scanning after 2s
-        }, 2000);
+          scanningRef.current = true;
+        }, 3000);
       }
     } catch (err) {
-      setError("Bridge Engine is sleeping. Retrying...");
+      setError("Bridge Engine is waking up. Please wait...");
       setTimeout(() => {
         setError(null);
         setIsVerifying(false);
         scanningRef.current = true;
-      }, 3000);
+      }, 5000);
     }
   };
 
@@ -107,29 +115,17 @@ export default function ScanQRCode({ onBack, onScanSuccess }) {
                 playsInline 
                 muted 
                 className={styles.video} 
-                style={{ filter: isVerifying ? 'blur(4px)' : 'none' }}
+                style={{ filter: isVerifying ? 'blur(8px)' : 'none' }}
             />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-          {/* Verification Overlay */}
           {isVerifying && (
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(0,0,0,0.4)',
-              borderRadius: '20px',
-              zIndex: 10
-            }}>
+            <div className={styles.loadingOverlay}>
               <Loader2 className="animate-spin" color="white" size={48} />
-              <p style={{ color: 'white', marginTop: '12px', fontWeight: '600' }}>Verifying QR...</p>
+              <p style={{ color: 'white', marginTop: '12px', fontWeight: '600' }}>API Decoding...</p>
             </div>
           )}
 
-          {/* Corner Accents */}
           {!isVerifying && (
             <>
               <div className={`${styles.corner} ${styles.topLeft}`}></div>
@@ -141,16 +137,7 @@ export default function ScanQRCode({ onBack, onScanSuccess }) {
         </div>
         
         {error && (
-          <div style={{
-            background: '#fee2e2',
-            color: '#ef4444',
-            padding: '12px',
-            borderRadius: '8px',
-            marginTop: '20px',
-            textAlign: 'center',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
+          <div className={styles.errorToast}>
             {error}
           </div>
         )}
