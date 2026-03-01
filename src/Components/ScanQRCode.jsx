@@ -13,44 +13,41 @@ export default function ScanQRCode({ onBack, onScanSuccess }) {
   const API_BASE = "https://scan-to-pay-api.onrender.com";
 
   // ✅ THE API HANDLER (Encoding/Decoding handled by Python)
-  const handleVerifiedScan = async (rawPayload) => {
-    setIsVerifying(true);
-    scanningRef.current = false; // Pause camera loop
-    
-    try {
-      // 🚀 FIXED: Changed from GET to POST to match your new FastAPI route
-      const response = await fetch(`${API_BASE}/translate-scan`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "X-API-KEY": "Khadijat-U-Kamaludeen-feb14aug170604-dee&deen" 
-        },
-        body: JSON.stringify({ qr_payload: rawPayload })
-      });
+  // ✅ Corrected handler inside ScanQRCode.jsx
+const handleVerifiedScan = async (rawPayload) => {
+  setIsVerifying(true);
+  scanningRef.current = false; // Stop the camera loop
 
-      const result = await response.json();
+  try {
+    const response = await fetch(`${API_BASE}/translate-scan`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-KEY": "Khadijat-U-Kamaludeen-feb14aug170604-dee&deen"
+      },
+      body: JSON.stringify({ qr_payload: rawPayload }) 
+    });
 
-      if (response.ok && result.status === "success") {
-        // API successfully decoded the NQR string into user details
-        onScanSuccess(result); 
-      } else {
-        setError(result.message || "Invalid QR Code");
-        // Resume scanning after a short delay
-        setTimeout(() => {
-          setError(null);
-          setIsVerifying(false);
-          scanningRef.current = true;
-        }, 3000);
-      }
-    } catch (err) {
-      setError("Bridge Engine is waking up. Please wait...");
+    const result = await response.json();
+
+    if (response.ok && result.status === "success") {
+      // Pass the WHOLE result object to App.js
+      onScanSuccess(result); 
+    } else {
+      setError(result.message || "Invalid QR Code");
       setTimeout(() => {
-        setError(null);
         setIsVerifying(false);
         scanningRef.current = true;
-      }, 5000);
+      }, 3000);
     }
-  };
+  } catch (err) {
+    setError("Connection Error. Please try again.");
+    setTimeout(() => {
+      setIsVerifying(false);
+      scanningRef.current = true;
+    }, 3000);
+  }
+};
 
   useEffect(() => {
     let stream = null;

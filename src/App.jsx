@@ -22,54 +22,21 @@ export default function App() {
     setLastAmount(paymentData.amount);
     setCurrentPage('success');
   };
-
-  const handleScanSuccess = async (qrData) => {
-    // 1. Extract raw string from the scanner payload
-    const payloadString = typeof qrData === 'string' ? qrData : (qrData.payload || "");
-    
-    if (!payloadString) {
-      alert("Empty QR Code detected.");
-      return;
-    }
-
-    setIsVerifying(true); // Start loading state
-
-    try {
-      // 2. Using POST to avoid URL truncation of '&' characters
-      const response = await fetch("https://scan-to-pay-api.onrender.com/translate-scan", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "X-API-KEY": "Khadijat-U-Kamaludeen-feb14aug170604-dee&deen" 
-        },
-        body: JSON.stringify({ qr_payload: payloadString })
-      });
-
-      const apiData = await response.json();
-      console.log("BRIDGE ENGINE RESPONSE:", apiData);
-
-      if (response.ok && apiData.status === "success") {
-        // 3. Update state BEFORE changing the page
+  
+const handleScanSuccess = (apiResponse) => {
+    // If we are here, ScanQRCode already called the API and got success
+    if (apiResponse && apiResponse.status === "success") {
         setScannedUser({
-          receiver: apiData.receiver,
-          bank_name: apiData.bank_name,
-          account: apiData.account,
-          bank_code: apiData.bank_code
+            receiver: apiResponse.receiver,
+            bank_name: apiResponse.bank_name,
+            account: apiResponse.account,
+            bank_code: apiResponse.bank_code
         }); 
-        
         setCurrentPage('confirm-payment');
-      } else {
-        // Handle API-side errors (Invalid NQR, Missing Bank, etc)
-        const errorMsg = apiData.detail || apiData.message || "Could not verify this QR";
-        alert("Verification Failed: " + errorMsg);
-      }
-    } catch (error) {
-      console.error("Connection Error:", error);
-      alert("Bridge Engine is waking up. Please wait 10 seconds and try scanning again.");
-    } finally {
-      setIsVerifying(false); // End loading state
+    } else {
+        alert("Invalid data received from scanner.");
     }
-  };
+};
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-black text-white shadow-2xl flex flex-col font-sans relative">
